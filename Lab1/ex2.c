@@ -8,8 +8,8 @@
 #define TST3 10000      //  ||
 #define TST4 100000     //  ||
 #define CIURASIZE 9     // Ciura' sequence size
-#define MAX 5
-#define MIN 1
+#define MAX 5           // Random numbers
+#define MIN 1           //  ||
 
 // Deque
 typedef struct node_t{
@@ -24,26 +24,31 @@ typedef struct desc_t{
     node_t *end;
 }desc_t;
 
+// Data structures
 void initializeNode(node_t **node);
 void initializeDesc(desc_t **descriptor);
 void insertNode(node_t **root, desc_t **descriptor, int num);
 void destroyDeque(node_t **root);
 void destroyDesc(desc_t **descriptor);
+// Array
 void printArray(int array[], int size);
 int *makeArray(int size);
-
+// Sorting
 void shellSort(int array[], int size, desc_t *descriptor);
 
 
 int main(){
+    // Data structures
     node_t *root = NULL;
     desc_t *descriptor = NULL;
+    // Array
     int *array1 = NULL, *array2 = NULL, *array3 = NULL, *array4 = NULL;
+    // Sequence
     int ciuraSeq[] = {1, 4, 10, 23, 57, 132, 301, 701, 1750}, i = 0;
 
     // Creates the Ciura' sequence
     initializeDesc(&descriptor);
-    while(!descriptor->start || descriptor->end->num<= TST4 / 2 + 1){
+    while(!descriptor->start || descriptor->end->num <= TST4 / 2 + 1){
         if (i < CIURASIZE)
             insertNode(&root, &descriptor, ciuraSeq[i++]);
         else
@@ -56,6 +61,9 @@ int main(){
     array4 = makeArray(TST4);
     // Calls the Shellsort with Ciuras' sequence for the arrays
     shellSort(array1, TST1, descriptor);
+    shellSort(array2, TST2, descriptor);
+    shellSort(array3, TST3, descriptor);
+    shellSort(array4, TST4, descriptor);
     // deallocates the data structs used to store the Ciura' sequence
     destroyDeque(&root);
     destroyDesc(&descriptor);
@@ -71,15 +79,16 @@ void shellSort(int array[], int size, desc_t *descriptor){
     clock_t start_t, end_t;
 
     start_t = clock();
-    do{
-        // Find the best starting segment
-        if (segment->prev->num > size / 2 + 1)
-            do{
-                segment = segment->prev;
-            }while(segment->num > size / 2 + 1);
-        else
-            // updates the segment
+    // Find the best starting segment
+    if (segment->prev->num > size / 2 + 1)
+        do{
             segment = segment->prev;
+        }while(segment->num > size / 2 + 1);
+    // Adjusts the segment
+    segment = segment->next;
+    do{
+        // updates the segment
+        segment = segment->prev;
         for (int i = 0; i < size; i++)
             for (int j = segment->num + i; j < size; j += segment->num){
                 int k = j - segment->num, aux = array[j];
@@ -90,12 +99,9 @@ void shellSort(int array[], int size, desc_t *descriptor){
                 }
                 array[k + segment->num] = aux;
             }
-        printf("After increments of size %d the list is: ", segment->num);
-        printArray(array, size);
-        printf("\n\n");
     }while(segment != descriptor->start);
     end_t = clock();
-    printf("\n> Time taken: %lfs\n", (double)(end_t - start_t) / CLOCKS_PER_SEC);
+    printf("\n> Array of size [%d] sorted.\n> Time taken: %lfs\n\n", size, (double)(end_t - start_t) / CLOCKS_PER_SEC);
 } 
 
 // initializes a node
