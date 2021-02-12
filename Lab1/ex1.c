@@ -65,5 +65,5 @@ void shellSort(int array[], int size){
         printArray(array, size);
     }
     end_t = clock();
-    printf("\n> Time taken: %lfs\n", (double)(end_t - start_t) / CLOCKS_PER_SEC);
+    printf("\n> Array of size [%d] sorted.\n> Time taken: %lfs\n\n", size, (double)(end_t - start_t) / CLOCKS_PER_SEC);
 }  
