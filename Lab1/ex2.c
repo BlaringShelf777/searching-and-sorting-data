@@ -8,8 +8,6 @@
 #define TST3 10000      //  ||
 #define TST4 100000     //  ||
 #define CIURASIZE 9     // Ciura' sequence size
-#define MAX 5           // Random numbers
-#define MIN 1           //  ||
 
 // Deque
 typedef struct node_t{
@@ -34,7 +32,8 @@ void destroyDesc(desc_t **descriptor);
 void printArray(int array[], int size);
 int *makeArray(int size);
 // Sorting
-void shellSort(int array[], int size, desc_t *descriptor);
+void shellSortCiura(int array[], int size, desc_t *descriptor);
+void shellSortShell(int array[], int size);
 
 
 int main(){
@@ -55,30 +54,47 @@ int main(){
             insertNode(&root, &descriptor, (int) floor(2.55*descriptor->end->num));
     }
     // Creates the arrays
-    array1 = makeArray(TST1);
-    array2 = makeArray(TST2);
-    array3 = makeArray(TST3);
-    array4 = makeArray(TST4);
+    array1 = makeArray(TST1); array2 = makeArray(TST2);
+    array3 = makeArray(TST3); array4 = makeArray(TST4);
     // Calls the Shellsort with Ciuras' sequence for the arrays
-    shellSort(array1, TST1, descriptor);
-    shellSort(array2, TST2, descriptor);
-    shellSort(array3, TST3, descriptor);
-    shellSort(array4, TST4, descriptor);
+    shellSortCiura(array1, TST1, descriptor); shellSortCiura(array2, TST2, descriptor);
+    shellSortCiura(array3, TST3, descriptor); shellSortCiura(array4, TST4, descriptor);
     // deallocates the data structs used to store the Ciura' sequence
-    destroyDeque(&root);
-    destroyDesc(&descriptor);
+    destroyDeque(&root); destroyDesc(&descriptor);
     // deallocates the arrays
-    free(array1); free(array2); free(array3); free(array4);
+    free(array1); free(array2); 
+    free(array3); free(array4);
 
     return 0;
 }
 
-// Shellsort Algorithm using Ciura' sequence
-void shellSort(int array[], int size, desc_t *descriptor){
-    node_t *segment = descriptor->start;
+// SHellsort Algorithm using Shell' sequence
+void shellSortShell(int array[], int size){
+    int segment = 0, pot = 1;
     clock_t start_t, end_t;
 
     start_t = clock();
+    while((int) floor(size / pow(2, pot))){
+        segment = (int) floor(size / pow(2, pot++));
+        for (int i = 0; i < size; i++)
+            for (int j = segment + i; j < size; j += segment){
+                int k = j - segment, aux = array[j];
+
+                while (k >= 0 && aux < array[k]){
+                    array[k + segment] = array[k];
+                    k -= segment;
+                }
+                array[k + segment] = aux;
+            }
+    }
+    end_t = clock();
+    printf("\n> Array of size [%d] sorted.\n> Time taken: %lfms\n\n", size, (double)(end_t - start_t) / CLOCKS_PER_SEC * 1000);
+}  
+// Shellsort Algorithm using Ciura' sequence
+void shellSortCiura(int array[], int size, desc_t *descriptor){
+    node_t *segment = descriptor->start;
+    clock_t start_t, end_t;
+
     // Find the best starting segment
     if (segment->prev->num > size / 2 + 1)
         do{
@@ -86,6 +102,7 @@ void shellSort(int array[], int size, desc_t *descriptor){
         }while(segment->num > size / 2 + 1);
     // Adjusts the segment
     segment = segment->next;
+    start_t = clock();
     do{
         // updates the segment
         segment = segment->prev;
@@ -101,7 +118,7 @@ void shellSort(int array[], int size, desc_t *descriptor){
             }
     }while(segment != descriptor->start);
     end_t = clock();
-    printf("\n> Array of size [%d] sorted.\n> Time taken: %lfs\n\n", size, (double)(end_t - start_t) / CLOCKS_PER_SEC);
+    printf("\n> Array of size [%d] sorted.\n> Time taken: %lfms\n\n", size, (double)(end_t - start_t) / CLOCKS_PER_SEC * 1000);
 } 
 
 // initializes a node
@@ -164,7 +181,7 @@ int *makeArray(int size){
 
     srand(time(NULL));
     for (int i = 0; i < size; i++)
-        array[i] = rand() % (int) pow(10, MIN + rand() % (MAX - MIN + 1));
+        array[i] = rand();
     
     return array;
 }
