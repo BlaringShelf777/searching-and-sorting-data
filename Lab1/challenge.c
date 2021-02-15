@@ -3,34 +3,51 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include <string.h>
 
-#define LEN 4
-#define MAX 25
+#define LINE 51
 
-char *makeSequence(int size);
 int shellSort(char array[], int size);
+void getInfo(int *len, int *sequence, char *line, FILE *file);
 
 int main(){
-    char *sequence = makeSequence(LEN);
-    char *aux =  (char *) malloc(sizeof(char) * LEN + 1);
-    int counter;
+    FILE *inFile = NULL;
+    char line[LINE];
+    int dataSets = 0;
 
-    strncpy(aux, sequence, LEN + 1);
-    counter = shellSort(aux, LEN);
-    printf(">%s.\n>%s.\n>%d\n\n", sequence, aux, counter);
+    // Opens the file
+    inFile = fopen("inFile.txt", "r");
+    if (!inFile){
+        printf("\n> ERROR! File not found."); 
+        
+        return 2;
+    }
+    // Gets the number of datasets
+    fgets(line, LINE, inFile); dataSets = atoi(line);
+    for (int i = 0; i < dataSets; i++){
+        int len = 0, sequences = 0;
+
+        // Gets the number of sequences in the present dataset and the lenght of it
+        getInfo(&len, &sequences, line, inFile);
+        for (int j = 0; j < sequences; j++){
+            // Gets a sequence
+            fgets(line, LINE, inFile); line[len] = '\0';
+            printf("%s\n", line);
+        }
+        printf("\n");
+    }
+    fclose(inFile);
 
     return 0;
 }
 
-char *makeSequence(int size){
-    char *sequence = (char *) malloc(sizeof(char) * size + 1);
+void getInfo(int *len, int *sequence, char *line, FILE *file){
+    char *tokens = "\n ";
+    char *str;
 
-    srand(time(NULL));
-    for (int i = 0; i < size; i++)
-        sequence[i] = 'A' + rand() % (MAX + 1);
-    sequence[size] = '\0';
-
-    return sequence;
+    fgets(line, LINE, file); fgets(line, LINE, file);
+    str = strtok(line, tokens); *len = atoi(str);
+    str = strtok(NULL, tokens); *sequence = atoi(str);
 }
 
 int shellSort(char array[], int size){
@@ -53,3 +70,7 @@ int shellSort(char array[], int size){
 
     return counter;
 }  
+
+
+
+
