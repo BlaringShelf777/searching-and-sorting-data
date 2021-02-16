@@ -1,19 +1,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include <math.h>
 #include <string.h>
 
 #define LINE 51
 
+// Stores the sequences
 typedef struct data_t{
     int sort;
     char *sequence;
 }data_t;
 
-int shellSort(char array[], int size);
+int inversions(char array[], int size);
 void getInfo(int *len, int *sequence, char *line, FILE *file);
+// HeapSort
+void buildHeap(data_t array[], int size);
+void heapify(data_t array[], int size, int index);
+void heapSort(data_t array[], int size);
 
 int main(){
     FILE *inFile = NULL, *outFile = NULL;
@@ -44,21 +48,28 @@ int main(){
 
         // Gets the number of sequences in the present dataset and the lenght of it
         getInfo(&len, &sequences, line, inFile);
-        printf("\n> DATASET %d:\n", i + 1);
+        printf("\n> Processing dataset %d...\n", i + 1);
         for (int j = 0; j < sequences; j++){
             char *aux = (char *) malloc(sizeof(char) * len + 1);
             // Gets a sequence 
             fgets(line, LINE, inFile); line[len] = '\0';
-           // data[j].sequence = (char *) malloc(sizeof(char) * len + 1);
+            // Creates a struct to store data
+            data[j].sequence = (char *) malloc(sizeof(char) * len + 2);
             data[j].sequence = strdup(line); aux = strdup(line);
-            data[j].sort = shellSort(aux, len); 
+            data[j].sequence[len] = '\n'; data[j].sequence[len + 1] = '\0';
+            data[j].sort = inversions(aux, len);
             free(aux);
         }
+        heapSort(data, sequences);
         for (int j = 0; j < sequences; j++)
-            printf("\n> SEQ_CPY: %s.\n> SORT: %d.\n",data[j].sequence, data[j].sort);
-        printf("\n");
+            printf("\n> SEQ: %s> %d.", data[j].sequence, data[j].sort);
+        for (int j = 0; j < sequences; j++)
+            fputs(data[j].sequence, outFile);
+        if (i + 1 < dataSets)
+            fputc('\n', outFile);
     }
-    fclose(inFile);
+    fclose(inFile); fclose(outFile);
+    printf("\n> Your file <%s> is ready.\n", "outFile.txt");
 
     return 0;
 }
@@ -72,26 +83,57 @@ void getInfo(int *len, int *sequence, char *line, FILE *file){
     str = strtok(NULL, tokens); *sequence = atoi(str);
 }
 
-int shellSort(char array[], int size){
-    int segment = 0, pot = 1, counter = 0;
-
-    while((int) floor(size / pow(2, pot))){
-        segment = (int) floor(size / pow(2, pot++));
-        for (int i = 0; i < size; i++)
-            for (int j = segment + i; j < size; j += segment){
-                int k = j - segment, aux = array[j];
-
-                while (k >= 0 && aux < array[k]){
-                    array[k + segment] = array[k];
-                    k -= segment;
-                    counter++;
-                }
-                array[k + segment] = aux;
+int inversions(char array[], int size){
+    int counter = 0;
+    
+    for (int i = 0, sizeAux = size; i < size; i++, sizeAux--)
+        for(int j = 1; j < sizeAux; j++){
+            if (array[j - 1] > array[j]){
+                int aux = array[j - 1];
+                
+                array[j - 1] = array[j];
+                array[j] = aux;
+                counter++;
             }
-    }
-
+        }
+    
     return counter;
 }  
 
+void heapSort(data_t array[], int size){
+    buildHeap(array, size);
+    for (int i = 0, heapSize = size - 1; i < size; i++){
+        data_t aux = array[0];
 
+        array[0] = array[heapSize]; array[heapSize] = aux;
+        heapify(array, heapSize--, 0);
+    }
+}
+
+// Creates a Heap
+void buildHeap(data_t array[], int size){
+    for (int i = size - 1; i > 0; i--)
+        heapify(array, size, i/2);
+}
+
+// Adjusts the Heap
+void heapify(data_t array[], int size, int index){
+    data_t aux = array[index];
+    
+    if ((index + 1) * 2 < size && array[(index + 1) * 2].sort > array[index].sort){
+        if (array[(index + 1) * 2].sort > array[(index + 1) * 2 - 1].sort){
+            array[index] = array[(index + 1) * 2];
+            array[(index + 1) * 2] = aux;
+            heapify(array, size, (index + 1) * 2);
+        }else{
+            array[index] = array[(index + 1) * 2 - 1];
+            array[(index + 1) * 2 - 1] = aux;
+            heapify(array, size, (index + 1) * 2 - 1);
+        }
+    }else if((index + 1) * 2 - 1 < size && array[(index + 1) * 2 - 1].sort > array[index].sort){
+        array[index] = array[(index + 1) * 2 - 1];
+        array[(index + 1) * 2 - 1] = aux;
+        heapify(array, size, (index + 1) * 2 - 1);
+    }
+}
 
