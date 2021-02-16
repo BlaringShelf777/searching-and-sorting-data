@@ -7,33 +7,55 @@
 
 #define LINE 51
 
+typedef struct data_t{
+    int sort;
+    char *sequence;
+}data_t;
+
 int shellSort(char array[], int size);
 void getInfo(int *len, int *sequence, char *line, FILE *file);
 
 int main(){
-    FILE *inFile = NULL;
+    FILE *inFile = NULL, *outFile = NULL;
     char line[LINE];
     int dataSets = 0;
 
-    // Opens the file
+    // Opens the in file
     inFile = fopen("inFile.txt", "r");
     if (!inFile){
-        printf("\n> ERROR! File not found."); 
+        printf("\n> ERROR! File not found.\n\n"); 
         
         return 2;
     }
+
+    // Creates the out file
+    outFile = fopen("outFile.txt", "w");
+    if (!outFile){
+        printf("\n> ERROR! Could not create file.\n\n");
+
+        return 3;
+    }
+    
     // Gets the number of datasets
     fgets(line, LINE, inFile); dataSets = atoi(line);
     for (int i = 0; i < dataSets; i++){
         int len = 0, sequences = 0;
+        data_t *data = (data_t *) malloc(sizeof(data_t) * sequences);
 
         // Gets the number of sequences in the present dataset and the lenght of it
         getInfo(&len, &sequences, line, inFile);
+        printf("\n> DATASET %d:\n", i + 1);
         for (int j = 0; j < sequences; j++){
-            // Gets a sequence
+            char *aux = (char *) malloc(sizeof(char) * len + 1);
+            // Gets a sequence 
             fgets(line, LINE, inFile); line[len] = '\0';
-            printf("%s\n", line);
+           // data[j].sequence = (char *) malloc(sizeof(char) * len + 1);
+            data[j].sequence = strdup(line); aux = strdup(line);
+            data[j].sort = shellSort(aux, len); 
+            free(aux);
         }
+        for (int j = 0; j < sequences; j++)
+            printf("\n> SEQ_CPY: %s.\n> SORT: %d.\n",data[j].sequence, data[j].sort);
         printf("\n");
     }
     fclose(inFile);
@@ -70,7 +92,6 @@ int shellSort(char array[], int size){
 
     return counter;
 }  
-
 
 
 
